@@ -11,10 +11,10 @@ import (
 )
 
 // ConvertTransaction converts a Geyser parsed transaction into *rpc.GetTransactionResult.
-func ConvertTransaction(slot uint64, geyserTx *yellowstone_geyser_pb.SubscribeUpdateTransactionInfo) (*rpc.GetTransactionResult, error) {
+func ConvertTransaction(slot uint64, tt uint64, geyserTx *yellowstone_geyser_pb.SubscribeUpdateTransactionInfo) (*rpc.GetTransactionResult, error) {
 	meta := geyserTx.Meta
 	transaction := geyserTx.Transaction
-
+	blockTime := solana.UnixTimeSeconds(int64(tt))
 	tx := &rpc.GetTransactionResult{
 		Transaction: &rpc.TransactionResultEnvelope{},
 		Meta: &rpc.TransactionMeta{
@@ -30,7 +30,8 @@ func ConvertTransaction(slot uint64, geyserTx *yellowstone_geyser_pb.SubscribeUp
 				Writable: make([]solana.PublicKey, 0),
 			},
 		},
-		Slot: slot,
+		Slot:      slot,
+		BlockTime: &blockTime,
 	}
 
 	tx.Meta.PreBalances = meta.PreBalances
