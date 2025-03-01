@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	yellowstone_geyser_pb "github.com/blockchain-develop/yellowstone/pb"
@@ -104,7 +105,7 @@ func TestConvertTransaction(t *testing.T) {
 	}
 }
 
-func TestSubscribe(t *testing.T) {
+func TestSubscribeTransaction(t *testing.T) {
 	client, err := New(context.Background(), "https://solana-yellowstone-grpc.publicnode.com:443", nil)
 	if err != nil {
 		panic(err)
@@ -113,21 +114,55 @@ func TestSubscribe(t *testing.T) {
 	stream := client.GetStreamClient("test")
 	vote := false
 	failed := false
-	stream.SubscribeTransaction("tet", &yellowstone_geyser_pb.SubscribeRequestFilterTransactions{
+	stream.SubscribeTransaction("test", &yellowstone_geyser_pb.SubscribeRequestFilterTransactions{
 		Vote:   &vote,
 		Failed: &failed,
 	})
 	for {
 		select {
 		case msg := <-stream.Ch:
-			msgJson, _ := json.Marshal(msg)
-			fmt.Printf("msg: %s\n", string(msgJson))
+			msgJson, _ := json.MarshalIndent(msg, "", "    ")
+			os.WriteFile("transaction.json", msgJson, 0644)
 			transaction := msg.GetTransaction()
 			if transaction == nil {
 				continue
 			}
 			fmt.Printf("get transaction: %d\n", transaction.Slot)
+			return
 		}
 	}
+}
 
+func TestSubscribeBlock(t *testing.T) {
+	client, err := New(context.Background(), "https://solana-yellowstone-grpc.publicnode.com:443", nil)
+	if err != nil {
+		panic(err)
+	}
+	client.AddStreamClient(context.Background(), "test", yellowstone_geyser_pb.CommitmentLevel_CONFIRMED)
+	stream := client.GetStreamClient("test")
+
+	includeTransactions := false
+	includeAccounts := false
+	includeEntries := false
+	stream.SubscribeBlocks("test", &yellowstone_geyser_pb.SubscribeRequestFilterBlocks{
+		IncludeTransactions: &includeTransactions,
+		IncludeAccounts:     &includeAccounts,
+		IncludeEntries:      &includeEntries,
+	})
+	/*
+		stream.SubscribeBlocksMeta("test", &yellowstone_geyser_pb.SubscribeRequestFilterBlocksMeta{})
+	*/
+	for {
+		select {
+		case msg := <-stream.Ch:
+			msgJson, _ := json.MarshalIndent(msg, "", "    ")
+			os.WriteFile("block.json", msgJson, 0644)
+			block := msg.GetBlock()
+			if block == nil {
+				continue
+			}
+			fmt.Printf("get block: %d\n", block.Slot)
+			return
+		}
+	}
 }

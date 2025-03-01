@@ -210,7 +210,6 @@ func ConvertBlock(geyserBlock *yellowstone_geyser_pb.SubscribeUpdateBlock) (*rpc
 			RewardType:  rewardType,
 		})
 	}
-
 	return block, nil
 }
 
