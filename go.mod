@@ -44,4 +44,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/gagliardetto/solana-go v1.12.0 => github.com/blockchain-develop/solana-go v0.0.0-20250219141812-4bdad1369538
+replace github.com/gagliardetto/solana-go v1.12.0 => github.com/blockchain-develop/solana-go v0.0.0-20250301074636-57c832606b5c
